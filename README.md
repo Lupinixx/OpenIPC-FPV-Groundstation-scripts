@@ -27,15 +27,17 @@ Once connected, your PC will detect the groundstation in two ways:
 
 Open your file manager. The DVR storage will appear as a removable drive.
 Open it and navigate to the `scripts` folder (create it if it doesn't exist).
-Copy all the `.sh` files from this folder into it.
+Copy all the `.sh` files from this folder into it, and also copy the `helpers/` folder — most scripts depend on it.
 
 **Option B — Terminal / command line**
 
 ```sh
-scp *.sh root@192.168.5.1:/DVR/scripts/
+scp -r *.sh helpers/ root@192.168.5.1:/DVR/scripts/
 ```
 
 Enter the password when prompted (default: `12345`).
+
+> **Note:** The `helpers/` folder must be copied alongside the scripts. Most scripts source `helpers/drone_helpers.sh` at startup and will fail if it is missing.
 
 That's it! The scripts are immediately available in the **Actions menu** in PixelPilot — no reboot needed.
 
