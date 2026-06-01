@@ -66,7 +66,7 @@ DRONE="${DRONE_USER}@${DRONE_IP}"
 # Stop majestic to free up link bandwidth before upload
 # --------------------------------------------------------------------------
 echo "[gs] Stopping majestic on drone to free up link bandwidth ..."
-sshpass -p "${DRONE_PASS}" ssh ${SSH_OPTS} "${DRONE}" 'killall -q majestic || true'
+sshpass -p "${DRONE_PASS}" ssh ${SSH_OPTS} "${DRONE}" 'killall -q majestic 2>/dev/null || true; killall -q waybeam 2>/dev/null || true'
 echo "[gs] majestic stopped."
 
 # --------------------------------------------------------------------------
