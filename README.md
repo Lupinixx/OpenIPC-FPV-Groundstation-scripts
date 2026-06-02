@@ -80,6 +80,56 @@ in the PixelPilot console.
 
 ---
 
+### `gs_enable_drone_routing.sh` — Publish drone network to your home LAN
+
+Enables IP forwarding on the groundstation so devices on your home network can
+reach the drone through the groundstation.
+
+The script auto-detects both supported link modes:
+- WFB-NG: groundstation `10.5.0.1` ↔ drone `10.5.0.10` (`10.5.0.0/24`)
+- APFPV: groundstation `192.168.0.1` ↔ drone `192.168.0.10` (`192.168.0.0/24`)
+
+What it does:
+- Detects the home uplink interface (default route)
+- Enables `net.ipv4.ip_forward`
+- Prints the router route target (`<drone subnet> via <groundstation home IP>`)
+- In WFB mode, applies a drone-side return-route fix so replies to your home LAN go back via the GS tunnel
+
+This helper is tailored for the current Buildroot image and relies on kernel routing (`ip` + `sysctl`) only.
+
+Usage:
+```sh
+./gs_enable_drone_routing.sh enable
+./gs_enable_drone_routing.sh status
+./gs_enable_drone_routing.sh disable
+```
+
+> **Note:** You still need a static route in your router to the active drone subnet via the groundstation home IP (for example, `10.5.0.0/24 via 192.168.1.3`).
+
+---
+
+### `gs_drone_proxy.sh` — Expose drone HTTP+SSH via GS ports
+
+Creates TCP proxies on the groundstation so your PC can access drone services
+through the groundstation IP without adding a router static route.
+
+Default mapping:
+- `http://<groundstation-lan-ip>:1080` -> `http://<drone-ip>:80`
+- `ssh root@<groundstation-lan-ip> -p 1022` -> `<drone-ip>:22`
+
+The script auto-detects drone mode:
+- WFB-NG drone: `10.5.0.10`
+- APFPV drone: `192.168.0.10`
+
+Usage:
+```sh
+./gs_drone_proxy.sh
+```
+
+Running it again is safe; if the proxy is already running, it will report the active mapping.
+
+---
+
 ### `untested/replace_runcam_bootloader_with_OpenIPC.sh` — Replace Runcam bootloader
 
 Replaces the factory bootloader on a Runcam unit with the OpenIPC bootloader.
