@@ -82,8 +82,8 @@ in the PixelPilot console.
 
 ### `gs_drone_proxy.sh` — Expose drone HTTP+SSH via GS ports
 
-Creates TCP proxies on the groundstation so your PC can access drone services
-through the groundstation IP without adding a router static route.
+Creates TCP proxies on the groundstation so your PC/Laptop/Phone can access drone services
+through the groundstation.
 
 Default mapping:
 - `http://<groundstation-lan-ip>:1080` -> `http://<drone-ip>:80`
@@ -92,11 +92,6 @@ Default mapping:
 The script auto-detects drone mode:
 - WFB-NG drone: `10.5.0.10`
 - APFPV drone: `192.168.0.10`
-
-Usage:
-```sh
-./gs_drone_proxy.sh
-```
 
 Running it again is safe; if the proxy is already running, it will report the active mapping.
 
