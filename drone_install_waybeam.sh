@@ -8,6 +8,7 @@ SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 . "${SCRIPT_DIR}/helpers/drone_helpers.sh"
 
 WAYBEAM_URL="https://github.com/OpenIPC/waybeam_venc/releases/download/latest/waybeam-star6e.tar.gz"
+S99MOUNTSD_URL="https://raw.githubusercontent.com/OpenIPC/waybeam_venc/master/scripts/S99mountSD"
 LIBS_BASE_URL="https://github.com/OpenIPC/waybeam_venc/raw/master/libs/star6e"
 STAR6E_LIBS="libcam_os_wrapper.so libcus3a.so libispalgo.so libmi_ai.so libmi_iqserver.so libmi_isp.so libmi_sensor.so libmi_sys.so libmi_venc.so libmi_vif.so libmi_vpe.so"
 
@@ -37,6 +38,9 @@ trap '_wfb_restore; rm -rf "${TMPDIR_LOCAL}"' EXIT
 echo "[gs] Downloading waybeam-star6e.tar.gz ..."
 curl -fsSL -o "${TMPDIR_LOCAL}/waybeam-star6e.tar.gz" "${WAYBEAM_URL}"
 
+echo "[gs] Downloading S99mountSD ..."
+curl -fsSL -o "${TMPDIR_LOCAL}/S99mountSD" "${S99MOUNTSD_URL}"
+
 echo "[gs] Downloading SoC libs ..."
 mkdir -p "${TMPDIR_LOCAL}/star6e-libs"
 for lib in ${STAR6E_LIBS}; do
@@ -59,6 +63,7 @@ dd if="${TMPDIR_LOCAL}/waybeam-star6e/waybeam"      bs=1M status=progress | sshp
 dd if="${TMPDIR_LOCAL}/waybeam-star6e/json_cli"     bs=1M status=progress | sshpass -p "${DRONE_PASS}" ssh ${SSH_OPTS} "${DRONE}" 'cat > /usr/bin/json_cli'
 dd if="${TMPDIR_LOCAL}/waybeam-star6e/regscan"      bs=1M status=progress | sshpass -p "${DRONE_PASS}" ssh ${SSH_OPTS} "${DRONE}" 'cat > /usr/bin/regscan'
 dd if="${TMPDIR_LOCAL}/waybeam-star6e/S95waybeam"   bs=1M status=progress | sshpass -p "${DRONE_PASS}" ssh ${SSH_OPTS} "${DRONE}" 'cat > /etc/init.d/S95waybeam'
+dd if="${TMPDIR_LOCAL}/S99mountSD"                  bs=1M status=progress | sshpass -p "${DRONE_PASS}" ssh ${SSH_OPTS} "${DRONE}" 'cat > /etc/init.d/S99mountSD'
 
 echo "[gs] Uploading SoC libs to /usr/lib ..."
 for lib in ${STAR6E_LIBS}; do
@@ -83,6 +88,7 @@ sshpass -p "${DRONE_PASS}" ssh ${SSH_OPTS} "${DRONE}" '
 set -e
 rm -f /usr/bin/majestic /etc/init.d/S95majestic
 chmod +x /etc/init.d/S95waybeam
+chmod +x /etc/init.d/S99mountSD
 chmod +x /usr/bin/waybeam /usr/bin/json_cli /usr/bin/regscan
 echo "[drone] Installation complete."
 '

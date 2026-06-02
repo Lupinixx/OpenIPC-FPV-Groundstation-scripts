@@ -12,7 +12,7 @@ SCP_OPTS="-O -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o Conn
 detect_drone_ip() {
     echo "[gs] Detecting drone IP address ..."
     DRONE_IP=""
-    for candidate in "10.5.0.10" "192.168.0.10" "192.168.0.1"; do
+    for candidate in "10.5.0.10" "192.168.0.10"; do
         if ping -c 1 -W 2 "${candidate}" >/dev/null 2>&1; then
             DRONE_IP="${candidate}"
             echo "[gs] Drone found at ${candidate}"
@@ -21,7 +21,7 @@ detect_drone_ip() {
             echo "[gs] No response from ${candidate}"
         fi
     done
-    echo "[gs] ERROR: Drone not reachable on any known IP (10.5.0.10 / 192.168.0.10 / 192.168.0.1)."
+    echo "[gs] ERROR: Drone not reachable on any known IP (10.5.0.10 / 192.168.0.10)."
     echo "[gs] Check that the drone is powered on and connected."
     exit 1
 }
@@ -97,9 +97,9 @@ _wfb_boost() {
         old_fec_n=$(wfb_tx_cmd "${port}" get_fec 2>/dev/null | grep '^n=' | cut -d= -f2)
         old_fec_k="${old_fec_k:-1}"
         old_fec_n="${old_fec_n:-2}"
-        echo "[gs] Boosting wfb_tx (port ${port}): MCS ${old_mcs} -> 3, FEC ${old_fec_k}/${old_fec_n} -> 6/8"
+        echo "[gs] Boosting wfb_tx (port ${port}): MCS ${old_mcs} -> 3, FEC ${old_fec_k}/${old_fec_n} -> 2/3"
         wfb_tx_cmd "${port}" set_radio -M 3 2>/dev/null || echo "[gs] Warning: failed to set MCS on port ${port}"
-        wfb_tx_cmd "${port}" set_fec -k 6 -n 8 2>/dev/null || echo "[gs] Warning: failed to set FEC on port ${port}"
+        wfb_tx_cmd "${port}" set_fec -k 2 -n 3 2>/dev/null || echo "[gs] Warning: failed to set FEC on port ${port}"
         WFB_RESTORE="${WFB_RESTORE}${WFB_RESTORE:+ }${port}:${old_mcs}"
         WFB_RESTORE_FEC="${WFB_RESTORE_FEC}${WFB_RESTORE_FEC:+ }${port}:${old_fec_k}:${old_fec_n}"
     done
