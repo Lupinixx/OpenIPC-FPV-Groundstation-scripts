@@ -29,15 +29,9 @@ Open your file manager. The DVR storage will appear as a removable drive.
 Open it and navigate to the `scripts` folder (create it if it doesn't exist).
 Copy all the `.sh` files from this folder into it, and also copy the `helpers/` folder — most scripts depend on it.
 
-**Option B — Terminal / command line**
+**Option B — SFTP**
 
-```sh
-scp -r *.sh helpers/ root@192.168.5.1:/DVR/scripts/
-```
-
-Enter the password when prompted (default: `12345`).
-
-> **Note:** The `helpers/` folder must be copied alongside the scripts. Most scripts source `helpers/drone_helpers.sh` at startup and will fail if it is missing.
+Upload the scripts to /media/dvr/scripts
 
 That's it! The scripts are immediately available in the **Actions menu** in PixelPilot — no reboot needed.
 
@@ -86,7 +80,7 @@ in the PixelPilot console.
 
 ---
 
-### `replace_runcam_bootloader_with_OpenIPC.sh` — Replace Runcam bootloader
+### `untested/replace_runcam_bootloader_with_OpenIPC.sh` — Replace Runcam bootloader
 
 Replaces the factory bootloader on a Runcam unit with the OpenIPC bootloader.
 You only need to do this once on a brand-new Runcam camera before installing
@@ -106,6 +100,7 @@ performance and configuration options.
 
 What the script does:
 - Downloads the latest Waybeam release and the required Star6E SoC libraries directly from GitHub
+- Downloads the Waybeam `S99mountSD` helper script and installs it to `/etc/init.d/S99mountSD`
 - Stops majestic, any running waybeam, and msposd on the drone to free up bandwidth
 - Temporarily boosts the uplink MCS index and FEC ratio for faster file transfer, then restores them afterwards
 - Uploads the waybeam binary, json_cli, regscan, init script, SoC libs, and a fresh default config
