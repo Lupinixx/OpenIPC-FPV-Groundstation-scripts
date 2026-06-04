@@ -108,7 +108,7 @@ automatically — an internet connection is required.
 
 ---
 
-### `drone_install_waybeam.sh` — Install Waybeam on the drone
+### `drone_install_waybeam_venc.sh` — Install Waybeam (venc) on the drone
 
 Replaces the default majestic camera software with
 [Waybeam](https://github.com/OpenIPC/waybeam_venc) on a Star6E-based drone.
@@ -121,12 +121,32 @@ What the script does:
 - Stops majestic, any running waybeam, and msposd on the drone to free up bandwidth
 - Temporarily boosts the uplink MCS index and FEC ratio for faster file transfer, then restores them afterwards
 - Uploads the waybeam binary, json_cli, regscan, init script, SoC libs, and a fresh default config
+- Includes `libmi_ive.so` and `libmi_rgn.so` in the uploaded Star6E library set
 - Configures the video output automatically based on the drone's IP address:
   - `10.5.0.10` (WFB-NG) → `unix://rtp_local`
   - `192.168.0.10` (APFPV) → `udp://192.168.0.10:5600`
 - Removes majestic and reboots the drone
 
 An internet connection on the groundstation is required to download the release files.
+
+---
+
+### `untested/drone_install_waybeam_wfb_ng.sh` — Install waybeam_wfb_ng (experimental)
+
+Installs Waybeam WFB-NG mode on both drone and groundstation using provided
+`link_controller` and `gs_supervisor` artifacts.
+
+What the script does:
+- Accepts either local files or URLs for `link_controller` and `gs_supervisor`
+- Uploads and launches a drone-side installer that switches the vehicle to `S99wfb`
+- Installs `gs_supervisor` on the groundstation with generated config in `/etc/waybeam/gs_supervisor.json`
+- Disables legacy GS `wifibroadcast` / `adaptive-link` services and starts `/etc/init.d/S99waybeam-wfb-ng`
+
+Required artifacts are not auto-discovered and must be provided via env vars:
+- `WAYBEAM_LINK_CONTROLLER` or `WAYBEAM_LINK_CONTROLLER_URL`
+- `WAYBEAM_GS_SUPERVISOR` or `WAYBEAM_GS_SUPERVISOR_URL`
+
+> **Important:** This script is in `untested/` and may disrupt link behavior immediately after switching services.
 
 ---
 
