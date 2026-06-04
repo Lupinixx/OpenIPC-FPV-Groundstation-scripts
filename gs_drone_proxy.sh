@@ -16,22 +16,52 @@ need_cmd() {
     }
 }
 
-for c in ip socat grep; do
+for c in ip socat grep ping tr; do
     need_cmd "$c"
 done
 
 detect_drone_ip() {
-    if ip -4 addr show | grep -q '10\.5\.0\.1/24'; then
+    # Prefer active reachability so mode switches do not keep stale mapping.
+    for candidate in 10.5.0.10 192.168.0.10; do
+        if ping -c 1 -W 2 "${candidate}" >/dev/null 2>&1; then
+            DRONE_IP="${candidate}"
+            return
+        fi
+    done
+
+    # Fallback: infer likely mode from GS local addresses.
+    if ip -4 addr show | grep -q '10\.5\.0\.'; then
         DRONE_IP="10.5.0.10"
         return
     fi
-    if ip -4 addr show | grep -q '192\.168\.0\.1/24'; then
+    if ip -4 addr show | grep -q '192\.168\.0\.'; then
         DRONE_IP="192.168.0.10"
         return
     fi
 
     echo "[gs] ERROR: Could not detect active drone link on GS."
     exit 1
+}
+
+stop_conflicting_forward() {
+    # stop_conflicting_forward <listen_port> <target_ip> <target_port>
+    listen_port="$1"
+    target_ip="$2"
+    target_port="$3"
+
+    for p in /proc/[0-9]*; do
+        [ -r "${p}/cmdline" ] || continue
+        cmd="$(tr '\000' ' ' < "${p}/cmdline" 2>/dev/null || true)"
+        case "${cmd}" in
+            *"socat "*"TCP-LISTEN:${listen_port},"*"TCP:${target_ip}:${target_port}"*)
+                ;;
+            *"socat "*"TCP-LISTEN:${listen_port},"*)
+                pid="${p##*/}"
+                kill "${pid}" 2>/dev/null || true
+                echo "[gs] Replacing stale forward on port ${listen_port}."
+                ;;
+        esac
+    done
 }
 
 start_forward() {
@@ -64,15 +94,16 @@ start_forward() {
 }
 
 has_forward() {
-    # has_forward <listen_port> <target_port>
+    # has_forward <listen_port> <target_ip> <target_port>
     listen_port="$1"
-    target_port="$2"
+    target_ip="$2"
+    target_port="$3"
 
     for p in /proc/[0-9]*; do
         [ -r "${p}/cmdline" ] || continue
         cmd="$(tr '\000' ' ' < "${p}/cmdline" 2>/dev/null || true)"
         case "${cmd}" in
-            *"socat "*"TCP-LISTEN:${listen_port},"*":${target_port}"*)
+            *"socat "*"TCP-LISTEN:${listen_port},"*"TCP:${target_ip}:${target_port}"*)
                 return 0
                 ;;
         esac
@@ -80,7 +111,9 @@ has_forward() {
     return 1
 }
 
-if has_forward "${HTTP_LISTEN_PORT}" "80" && has_forward "${SSH_LISTEN_PORT}" "22"; then
+detect_drone_ip
+
+if has_forward "${HTTP_LISTEN_PORT}" "${DRONE_IP}" "80" && has_forward "${SSH_LISTEN_PORT}" "${DRONE_IP}" "22"; then
     echo "[gs] Forward 1080 -> drone:80 already running."
     echo "[gs] Forward 1022 -> drone:22 already running."
     echo "[gs] Proxy active:"
@@ -89,7 +122,9 @@ if has_forward "${HTTP_LISTEN_PORT}" "80" && has_forward "${SSH_LISTEN_PORT}" "2
     exit 0
 fi
 
-detect_drone_ip
+stop_conflicting_forward "${HTTP_LISTEN_PORT}" "${DRONE_IP}" "80"
+stop_conflicting_forward "${SSH_LISTEN_PORT}" "${DRONE_IP}" "22"
+
 start_forward "${HTTP_LISTEN_PORT}" "${DRONE_IP}" "80"
 start_forward "${SSH_LISTEN_PORT}" "${DRONE_IP}" "22"
 
