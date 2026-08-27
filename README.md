@@ -130,23 +130,3 @@ What the script does:
 An internet connection on the groundstation is required to download the release files.
 
 ---
-
-### `untested/drone_install_waybeam_wfb_ng.sh` — Install waybeam_wfb_ng (experimental)
-
-Installs Waybeam WFB-NG mode on both drone and groundstation using provided
-`link_controller` and `gs_supervisor` artifacts.
-
-What the script does:
-- Accepts either local files or URLs for `link_controller` and `gs_supervisor`
-- Uploads and launches a drone-side installer that switches the vehicle to `S99wfb`
-- Installs `gs_supervisor` on the groundstation with generated config in `/etc/waybeam/gs_supervisor.json`
-- Disables legacy GS `wifibroadcast` / `adaptive-link` services and starts `/etc/init.d/S99waybeam-wfb-ng`
-
-Required artifacts are not auto-discovered and must be provided via env vars:
-- `WAYBEAM_LINK_CONTROLLER` or `WAYBEAM_LINK_CONTROLLER_URL`
-- `WAYBEAM_GS_SUPERVISOR` or `WAYBEAM_GS_SUPERVISOR_URL`
-
-> **Important:** This script is in `untested/` and may disrupt link behavior immediately after switching services.
-
----
-
