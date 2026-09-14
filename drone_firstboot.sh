@@ -19,7 +19,7 @@ DRONE="${DRONE_USER}@${DRONE_IP}"
 echo "[gs] Connecting to drone at ${DRONE_IP} ..."
 
 echo "[gs] Starting firstboot; live output follows:"
-sshpass -p "${DRONE_PASS}" ssh ${SSH_OPTS} "${DRONE}" 'firstboot' || {
+sshpass -p "${DRONE_PASS}" ssh -tt ${SSH_OPTS} "${DRONE}" 'firstboot' || {
     rc=$?
     echo "[gs] SSH session ended with exit code ${rc}."
     echo "[gs] If reboot happened mid-session, this is expected."

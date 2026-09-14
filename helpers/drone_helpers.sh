@@ -12,7 +12,7 @@ SCP_OPTS="-O -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o Conn
 detect_drone_ip() {
     echo "[gs] Detecting drone IP address ..."
     DRONE_IP=""
-    for candidate in "10.5.0.10" "192.168.0.10"; do
+    for candidate in "10.5.0.10" "192.168.0.1"; do
         if ping -c 1 -W 2 "${candidate}" >/dev/null 2>&1; then
             DRONE_IP="${candidate}"
             echo "[gs] Drone found at ${candidate}"
@@ -21,7 +21,7 @@ detect_drone_ip() {
             echo "[gs] No response from ${candidate}"
         fi
     done
-    echo "[gs] ERROR: Drone not reachable on any known IP (10.5.0.10 / 192.168.0.10)."
+    echo "[gs] ERROR: Drone not reachable on any known IP (10.5.0.10 / 192.168.0.1)."
     echo "[gs] Check that the drone is powered on and connected."
     exit 1
 }
